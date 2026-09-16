@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #fbf9f5;
+  color: #33384a;
+}
+
+::selection {
+  background-color: #ffb25b;
+  color: #0f1b3d;
+}
+
+/* Hide scrollbar for snap-scroll sliders, while keeping them scrollable/swipeable */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Visible keyboard focus everywhere, without changing mouse-click appearance */
+:focus-visible {
+  outline: 2px solid #f5811e;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
