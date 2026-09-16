@@ -2,7 +2,7 @@ import FaqChatbot from "@/components/FaqChatbot";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import TopBar from "@/components/TopBar";
-import WhatsappButton from "@/components/WhatsappButton";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
@@ -40,7 +40,7 @@ export default function RootLayout({
         <main>{children}</main>
         <Footer />
         <FaqChatbot />
-        <WhatsappButton />
+        <WhatsAppButton />
       </body>
     </html>
   );
