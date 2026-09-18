@@ -10,14 +10,14 @@ export default function TopBar() {
         </p>
         <div className="hidden items-center gap-5 md:flex">
           <a
-            href="tel:+8801330401213"
+            href="tel:+8801829258553"
             className="transition-colors hover:text-white"
           >
             <Icon
               icon="famicons:call-outline"
               className="mr-1 inline-block size-4"
             />
-            +880 1330401213
+            +880 1829258553
           </a>
           <span className="h-3 w-px bg-white/20" aria-hidden />
           <a

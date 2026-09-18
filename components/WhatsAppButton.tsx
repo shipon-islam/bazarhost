@@ -2,7 +2,7 @@ import Link from "next/link";
 
 // wa.me expects the number in international format with no "+", spaces, or
 // leading zeros — e.g. Bangladesh 01XXX-XXXXXX becomes 8801XXXXXXXXX.
-const WHATSAPP_NUMBER = "8801641758653";
+const WHATSAPP_NUMBER = "8801829258553";
 const PREFILLED_MESSAGE = "Hi BazarHost, I have a question about a product.";
 
 export default function WhatsAppButton() {

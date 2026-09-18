@@ -1,5 +1,5 @@
-import ProductCard from "@/components/ProductCard";
 import FeaturedSlider from "@/components/FeaturedSlider";
+import ProductCard from "@/components/ProductCard";
 import Reviews from "@/components/Reviews";
 import { products } from "@/data/products";
 
@@ -10,7 +10,12 @@ const categoryIcons: Record<string, string> = {
   "And More": "✨",
 };
 
-const categories = ["Electronics", "Fashion", "Home & Living", "And More"] as const;
+const categories = [
+  "Electronics",
+  "Fashion",
+  "Home & Living",
+  "And More",
+] as const;
 
 const featuredProducts = products.filter((p) => p.badge);
 
@@ -86,8 +91,8 @@ export default function Home() {
                     {category}
                   </h2>
                   <p className="mt-1 text-sm text-slate-muted">
-                    {items.length} product{items.length > 1 ? "s" : ""} ready
-                    to ship
+                    {items.length} product{items.length > 1 ? "s" : ""} ready to
+                    ship
                   </p>
                 </div>
               </div>

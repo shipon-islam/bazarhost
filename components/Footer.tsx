@@ -2,8 +2,8 @@ import Newsletter from "@/components/Newsletter";
 import Link from "next/link";
 export default function Footer() {
   return (
-    <footer className="relative mt-32 bg-ink text-white">
-      <div className="mx-auto max-w-6xl px-5">
+    <footer className="relative pt-32 bg-ink text-white">
+      <div className="mx-auto max-w-6xl px-5 ">
         <Newsletter />
       </div>
 
@@ -59,10 +59,10 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="tel:+8801330401213"
+                  href="tel:+8801829258553"
                   className="transition-colors hover:text-white"
                 >
-                  +880 1330401213
+                  +880 1829258553
                 </a>
               </li>
               <li>Dhaka, Bangladesh</li>

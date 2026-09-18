@@ -5,6 +5,7 @@ import TopBar from "@/components/TopBar";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
+// @ts-expect-error Next.js handles global CSS imports at build time.
 import "./globals.css";
 
 const sora = Sora({
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
   title: "BazarHost — আপনার প্রয়োজন, আমাদের বাজার",
   description:
     "BazarHost is Bangladesh's marketplace for electronics, fashion, home & living and more. Shop smart, live better.",
+  logo: "/favicon.ico",
 };
 
 export default function RootLayout({
