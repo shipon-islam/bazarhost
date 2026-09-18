@@ -25,7 +25,6 @@ export const metadata: Metadata = {
   title: "BazarHost — আপনার প্রয়োজন, আমাদের বাজার",
   description:
     "BazarHost is Bangladesh's marketplace for electronics, fashion, home & living and more. Shop smart, live better.",
-  logo: "/favicon.ico",
 };
 
 export default function RootLayout({
