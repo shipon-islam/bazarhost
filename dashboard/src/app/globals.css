@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  BRAND TOKENS: the ONLY place colours are defined.
+ *  The values below are placeholders (navy sidebar + bright blue primary).
+ *  To apply the official BazarHost palette, replace the hex codes in the
+ *  "brand" (primary/accent) and "navy" (sidebar) ramps. Nothing else to change.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+@theme {
+  --font-sans:
+    var(--font-inter), var(--font-bengali), ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand (orange) — 500 matches the buttons, badges and hero accent */
+  --color-brand-50: #fff7ed;
+  --color-brand-100: #ffedd5;
+  --color-brand-200: #fed7aa;
+  --color-brand-300: #fdba74;
+  --color-brand-400: #fb9a43;
+  --color-brand-500: #f58220;
+  --color-brand-600: #e06a10;
+  --color-brand-700: #bb520c;
+  --color-brand-800: #954112;
+  --color-brand-900: #783712;
+
+  /* Navy — 900 matches the top bar and hero background */
+  --color-navy-300: #9aa5c4;
+  --color-navy-400: #7c8ab0;
+  --color-navy-700: #1d2d63;
+  --color-navy-800: #15234f;
+  --color-navy-900: #0f1d47;
+  --color-navy-950: #0a1230;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--color-gray-50);
+    color: var(--color-gray-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+  }
+  /* Native <dialog> backdrop for modals */
+  dialog::backdrop {
+    background: rgb(15 26 48 / 0.55);
+  }
+  /* Number inputs: hide spinners so values don't change on scroll */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

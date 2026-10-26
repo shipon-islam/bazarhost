@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy-950: #081529;
+  --color-navy-900: #0b1f3a;
+  --color-navy-800: #14325c;
+  --color-brand: #f37021;
+  --color-brand-dark: #d95f14;
+  --color-brand-light: #ffb25b;
+  --color-surface: #f6f7f9;
+  --color-bg: #fbf9f5 --font-inter: var(--font-inter);
+  --font-sora: , var(--font-sora);
+}
+@layer utilities {
+  .bg-diagonal-split {
+    background-image: linear-gradient(
+      115deg,
+      #101e48 0%,
+      #101e48 46%,
+      #f5811e 46%,
+      #f5811e 100%
+    );
+  }
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-sora);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background-color: var(--color-bg);
+  color: var(--color-navy-950);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Visible keyboard focus everywhere, without changing mouse-click appearance */
+:focus-visible {
+  outline: 2px solid #f5811e;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
