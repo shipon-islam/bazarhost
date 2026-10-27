@@ -1,13 +1,13 @@
 import { Category } from '../models/Category.js';
 import { Product } from '../models/Product.js';
+import { audit } from '../services/audit.js';
+import { descendantCategoryIds } from '../services/categoryTree.js';
+import { getSettings } from '../services/settings.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { andFilter, buildSort, paginate, searchCondition } from '../utils/query.js';
 import { ok } from '../utils/response.js';
 import { uniqueSlug } from '../utils/slug.js';
-import { audit } from '../services/audit.js';
-import { descendantCategoryIds } from '../services/categoryTree.js';
-import { getSettings } from '../services/settings.js';
 
 const SORTABLE = ['name', 'price', 'stockQuantity', 'createdAt', 'status', 'sku'];
 const CATEGORY_POPULATE = { path: 'category', select: 'name slug' };
