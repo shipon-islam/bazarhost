@@ -7,8 +7,8 @@ import { ok } from '../utils/response.js';
 export const uploadImages = asyncHandler(async (req, res) => {
   if (!req.files?.length) throw new ApiError(400, 'No images uploaded. Send multipart/form-data with field "images".');
   ok(res, req.files.map((f) => ({
-    url: `${env.PUBLIC_URL}/uploads/${f.filename}`,
-    path: `/uploads/${f.filename}`,
+    url: `${env.PUBLIC_URL}/uploads/temp/${f.filename}`,
+    path: `/uploads/temp/${f.filename}`,
     filename: f.filename,
     size: f.size,
     mimetype: f.mimetype,

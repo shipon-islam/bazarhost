@@ -36,7 +36,9 @@ const productSchema = new Schema(
   },
   { timestamps: true, toJSON: cleanJSON() },
 );
-
+productSchema.virtual('thumbnail').get(function () {
+  return this.images[0]?.url ?? null;
+});
 // SKU is unique only when it is an actual string (so many products may have no SKU)
 productSchema.index({ sku: 1 }, { unique: true, partialFilterExpression: { sku: { $type: 'string' } } });
 productSchema.index({ createdAt: -1 });

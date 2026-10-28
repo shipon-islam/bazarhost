@@ -33,6 +33,7 @@ const ROLES = [
   { name: 'Product Manager', description: 'Manages products and categories.', permissions: perms({ products: CRUD, categories: CRUD }) },
   { name: 'Order Manager', description: 'Processes and fulfils orders.', permissions: perms({ orders: ['view', 'create', 'edit'], products: ['view'], users: ['view'] }) },
   { name: 'Customer', description: 'Storefront customer account (no admin access).', permissions: [], type: 'customer' },
+  { name: 'User', description: 'Default self-registered account (no admin access).', permissions: [], type: 'customer' },
 ];
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];

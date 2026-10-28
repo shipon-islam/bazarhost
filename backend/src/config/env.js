@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import path from 'node:path';
+import { fileURLToPath } from "node:url";
 import { z } from 'zod';
-
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().default(5000),
@@ -29,10 +29,15 @@ if (!parsed.success) {
 }
 
 const e = parsed.data;
+
 export const env = {
   ...e,
   isProd: e.NODE_ENV === 'production',
   clientUrls: e.CLIENT_URLS.split(',').map((s) => s.trim().replace(/\/$/, '')).filter(Boolean),
   uploadPath: path.resolve(e.UPLOAD_DIR),
   PUBLIC_URL: e.PUBLIC_URL.replace(/\/$/, ''),
+  ROOT_DIR:path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../..",
+  )
 };

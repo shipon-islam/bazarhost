@@ -35,7 +35,7 @@ Add the API host to `images.remotePatterns` in `next.config` so `next/image` can
 
 | Area | Endpoints | Permission |
 |---|---|---|
-| Auth | `POST /auth/login` · `POST /auth/logout` · `GET/PATCH /auth/me` · `POST /auth/change-password` · `POST /auth/accept-invite` | public / session |
+| Auth | `POST /auth/register` · `POST /auth/login` · `POST /auth/logout` · `GET/PATCH /auth/me` · `POST /auth/change-password` · `POST /auth/accept-invite` | public / session |
 | Dashboard | `GET /dashboard?range=today\|7d\|30d\|90d` – cards, charts, recent orders, low stock, new products (sections hidden if the user lacks access) | staff |
 | Products | `GET /products` (filters: `category`, `status`, `stockStatus`, `featured`, `lowStock`, `minPrice`, `maxPrice`) · `POST` · `GET/PUT/PATCH/DELETE /:id` · `POST /bulk` (`delete` \| `status`) | `products:view/create/edit/delete` |
 | Categories | `GET /categories` (adds `productCount`) · `GET /categories/options` · `POST` · `GET/PUT/PATCH/DELETE /:id` · `POST /bulk` | `categories:*` |
@@ -55,6 +55,8 @@ Built-in guards: system roles can't be deleted; the Super Admin role can't be ed
 
 ## Security notes
 Passwords are bcrypt-hashed (cost 12) and never set by admins – new users get a one-time invite link (72 h, stored hashed). Login is rate limited and timing-safe. Cookie sessions reject unexpected `Origin`s on writes. Helmet, strict CORS, body size limit, Zod validation on every input (also blocks NoSQL operator injection), CSV formula-injection escaping, and image uploads restricted to raster types with random filenames.
+
+Anyone can create a storefront account with `POST /api/v1/auth/register` (`name`, `email`, `password`). Registration assigns the `User` customer role and starts a session. This role has no admin permissions; admins can change it later. Run `npm run seed` to create the role.
 
 ## Things you still need to do
 1. **Email delivery** – `services/mailer.js` only logs the invite link (dev). Plug in SES/Resend/Nodemailer. In dev the invite link is also returned in the API response.

@@ -4,10 +4,11 @@ import * as c from "../controllers/authController.js";
 import { authenticate } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 import {
-    acceptInviteSchema,
-    changePasswordSchema,
-    loginSchema,
-    updateMeSchema,
+  acceptInviteSchema,
+  changePasswordSchema,
+  loginSchema,
+  registerSchema,
+  updateMeSchema,
 } from "../validations/auth.js";
 
 const router = Router();
@@ -30,6 +31,7 @@ const limiter = (limit) =>
   });
 
 router.post("/login", limiter(10), validate({ body: loginSchema }), c.login);
+router.post("/register", limiter(10), validate({ body: registerSchema }), c.register);
 router.post("/logout", c.logout);
 router.post(
   "/accept-invite",

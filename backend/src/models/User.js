@@ -1,16 +1,33 @@
-import mongoose, { Schema } from 'mongoose';
-import bcrypt from 'bcryptjs';
-import { USER_STATUSES } from '../config/constants.js';
-import { cleanJSON, addressSchema } from './shared.js';
+import bcrypt from "bcryptjs";
+import mongoose, { Schema } from "mongoose";
+import { USER_STATUSES } from "../config/constants.js";
+import { addressSchema, cleanJSON } from "./shared.js";
 
 const userSchema = new Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 120 },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true, maxlength: 254 },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      maxlength: 254,
+    },
     phone: { type: String, trim: true, maxlength: 30 },
     avatar: { type: String, trim: true, maxlength: 500 },
-    role: { type: Schema.Types.ObjectId, ref: 'Role', required: true, index: true },
-    status: { type: String, enum: USER_STATUSES, default: 'active', index: true },
+    role: {
+      type: Schema.Types.ObjectId,
+      ref: "Role",
+      required: true,
+      index: true,
+    },
+    status: {
+      type: String,
+      enum: USER_STATUSES,
+      default: "active",
+      index: true,
+    },
     address: addressSchema,
     passwordSet: { type: Boolean, default: false }, // false => invite still pending
     passwordHash: { type: String, select: false },
@@ -22,7 +39,12 @@ const userSchema = new Schema(
   },
   {
     timestamps: true,
-    toJSON: cleanJSON(['passwordHash', 'inviteTokenHash', 'inviteExpiresAt', 'tokenVersion']),
+    toJSON: cleanJSON([
+      "passwordHash",
+      "inviteTokenHash",
+      "inviteExpiresAt",
+      "tokenVersion",
+    ]),
   },
 );
 
@@ -36,4 +58,4 @@ userSchema.methods.setPassword = async function setPassword(plain) {
   this.inviteExpiresAt = undefined;
 };
 
-export const User = mongoose.model('User', userSchema);
+export const User = mongoose.model("User", userSchema);

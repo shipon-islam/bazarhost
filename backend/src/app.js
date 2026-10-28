@@ -8,7 +8,6 @@ import morgan from "morgan";
 import fs from "node:fs";
 
 import { env } from "./config/env.js";
-import { UPLOAD_ROOT } from "./config/upload.config.js";
 import { errorHandler, notFound } from "./middleware/error.js";
 import routes from "./routes/index.js";
 import { ApiError } from "./utils/ApiError.js";
@@ -76,12 +75,12 @@ app.use(
 );
 
 // Create upload directory.
-fs.mkdirSync(UPLOAD_ROOT, { recursive: true });
+fs.mkdirSync(env.uploadPath, { recursive: true });
 
 // Public image URLs: /uploads/filename.webp
 app.use(
   "/uploads",
-  express.static(UPLOAD_ROOT, {
+  express.static(env.ROOT_DIR, {
     maxAge: "7d",
     index: false,
     dotfiles: "deny",

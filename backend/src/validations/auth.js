@@ -7,6 +7,12 @@ export const loginSchema = z.object({
   returnToken: z.boolean().optional(), // set true for non-browser clients that use Bearer tokens
 });
 
+export const registerSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  email,
+  password,
+});
+
 export const updateMeSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
   phone,

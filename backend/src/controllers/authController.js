@@ -1,13 +1,14 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
+import { Role } from '../models/Role.js';
 import { User } from '../models/User.js';
+import { audit } from '../services/audit.js';
+import { tokenMatches } from '../services/invite.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { effectivePermissions } from '../utils/permissions.js';
 import { ok } from '../utils/response.js';
-import { tokenMatches } from '../services/invite.js';
-import { audit } from '../services/audit.js';
 
 // Compared against when the email is unknown, so response time doesn't reveal which emails exist.
 const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', 12);
@@ -46,8 +47,6 @@ export const login = asyncHandler(async (req, res) => {
   const match = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
   if (!user || !user.passwordHash || !match) throw new ApiError(401, 'Invalid email or password', { code: 'INVALID_CREDENTIALS' });
   if (user.status !== 'active') throw new ApiError(403, `Your account is ${user.status}. Please contact an administrator.`, { code: 'ACCOUNT_INACTIVE' });
-  if (user.role.type !== 'staff') throw new ApiError(403, 'This account does not have admin access', { code: 'FORBIDDEN' });
-
   await User.updateOne({ _id: user._id }, { lastLoginAt: new Date() });
   user.lastLoginAt = new Date();
   const token = setSessionCookie(res, user);
@@ -55,6 +54,31 @@ export const login = asyncHandler(async (req, res) => {
   audit(req, 'auth.login', 'user', user._id);
   ok(res, { user: sessionUser(user), ...(returnToken ? { token } : {}) });
 });
+
+export const register = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
+  if (await User.exists({ email })) {
+    throw new ApiError(409, 'A user with this email already exists', { code: 'EMAIL_IN_USE', details: [{ field: 'email', message: 'Email already in use' }] });
+  }
+  const role = await Role.findOne({ slug: 'user', type: 'customer' });
+  if (!role) throw new ApiError(503, 'User registration is not configured. Run the database seed first.', { code: 'REGISTRATION_UNAVAILABLE' });
+
+  const user = new User({ name, email, role: role._id, status: 'active' });
+  await user.setPassword(password);
+  try {
+    await user.save();
+  } catch (err) {
+    if (err?.code === 11000) throw new ApiError(409, 'A user with this email already exists', { code: 'EMAIL_IN_USE', details: [{ field: 'email', message: 'Email already in use' }] });
+    throw err;
+  }
+  user.role = role;
+  user.lastLoginAt = new Date();
+  req.user = user;
+  setSessionCookie(res, user);
+  audit(req, 'auth.register', 'user', user._id);
+  ok(res, { user: sessionUser(user) }, undefined, 201);
+});
+
 
 export const logout = asyncHandler(async (_req, res) => {
   res.clearCookie(env.COOKIE_NAME, cookieOptions());

@@ -1,14 +1,13 @@
-
 import app from "./app.js";
 import { connectDB, disconnectDB } from "./config/db.js";
 import { env } from "./config/env.js";
-
+import { startCleanupJob } from "./job-automate/cleanupTemp.js";
 const SHUTDOWN_TIMEOUT = 10_000;
 
 let server;
 let isShuttingDown = false;
 let shutdownTimer;
-
+let cleanupJob;
 async function shutdown(signal, exitCode = 0) {
   if (isShuttingDown) return;
   isShuttingDown = true;
@@ -21,6 +20,7 @@ async function shutdown(signal, exitCode = 0) {
   }, SHUTDOWN_TIMEOUT);
 
   try {
+    cleanupJob?.stop();
     if (server?.listening) {
       await new Promise((resolve, reject) => {
         server.close((error) => {
@@ -50,7 +50,7 @@ async function startServer() {
         `BazarHost API listening on port http://localhost:${env.PORT} (${env.NODE_ENV})`,
       );
     });
-
+    cleanupJob = startCleanupJob();
     server.on("error", (error) => {
       console.error("HTTP server error:", error);
       void shutdown("SERVER_ERROR", 1);
