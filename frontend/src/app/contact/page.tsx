@@ -1,7 +1,6 @@
 import ContactForm from "@/components/ContactForm";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
-
 export const metadata = {
   title: "Contact us",
   description:

@@ -3,6 +3,7 @@ import { Product } from "../models/Product.js";
 import { audit } from "../services/audit.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { removeUploadedFile } from "../utils/deleteImages.js";
 import { moveToUploadFolder } from "../utils/moveToUploadFolder.js";
 import {
   andFilter,
@@ -167,16 +168,21 @@ export const update = asyncHandler(async (req, res) => {
   if (body.slug && body.slug !== category.slug)
     await assertSlugFree(body.slug, category._id);
   category.set(body);
+  //store previous uploaded image
+  const previousImage = category?.image;
+  let newImage;
   //updated image upload system
-  if (body.image) {
-    const image = moveToUploadFolder(body?.image);
-    category.set("image", image);
+  if (body?.image) {
+    newImage = await moveToUploadFolder(body.image);
+    category.set("image", newImage);
   }
+  // Save the database
   await category.save();
   //delete existing image
-  if (body?.image) {
+  if (previousImage && newImage && previousImage !== newImage) {
     await removeUploadedFile(category?.image);
   }
+  
   audit(req, "category.updated", "category", category._id, {
     fields: Object.keys(body),
   });
@@ -188,7 +194,7 @@ export const remove = asyncHandler(async (req, res) => {
   if (!category)
     throw new ApiError(404, "Category not found", { code: "NOT_FOUND" });
   await deleteIfUnused(req, category);
-  await removeUploadedFile(category?.image)
+  await removeUploadedFile(category?.image);
   ok(res, { message: "Category deleted" });
 });
 
@@ -209,6 +215,7 @@ export const bulk = asyncHandler(async (req, res) => {
       if (!c) throw new ApiError(404, "Category not found");
       // eslint-disable-next-line no-await-in-loop
       await deleteIfUnused(req, c);
+      await removeUploadedFile(c?.image);
       results.push({ id, ok: true });
     } catch (err) {
       results.push({ id, ok: false, error: err.message });

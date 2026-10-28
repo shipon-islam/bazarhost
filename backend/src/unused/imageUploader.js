@@ -10,7 +10,7 @@ import {
   ALLOWED_MIME_TYPES,
   IMAGE_UPLOAD_CONFIG,
   UPLOAD_ROOT,
-} from "../config/upload.config";
+} from "./upload.config";
 
 
 // --------------------------------------------------

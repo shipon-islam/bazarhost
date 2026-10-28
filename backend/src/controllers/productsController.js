@@ -102,8 +102,7 @@ export const create = asyncHandler(async (req, res) => {
   if (slug) await assertSlugFree(slug);
   else slug = await uniqueSlug(Product, body.name);
 
-  
-const images=moveMultipleImageToUploadFolder(body?.images)
+  const images = moveMultipleImageToUploadFolder(body?.images);
 
   const product = await Product.create({
     ...body,
@@ -118,7 +117,7 @@ const images=moveMultipleImageToUploadFolder(body?.images)
 
 export const update = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
- 
+
   if (!product)
     throw new ApiError(404, "Product not found", { code: "NOT_FOUND" });
   const body = req.body;
@@ -132,16 +131,14 @@ export const update = asyncHandler(async (req, res) => {
 
   //updated image upload system
   if (body.images) {
-    const images=moveMultipleImageToUploadFolder(body?.images)
+    const images = await moveMultipleImageToUploadFolder(body?.images);
     product.set("images", images);
   }
- 
+
   await product.save();
   // delete if user select delete image
   if (deletedImages && deletedImages.length > 0) {
-    await Promise.all(
-      deletedImages.map((image) => removeUploadedFile(image)),
-    );
+    await Promise.all(deletedImages.map((image) => removeUploadedFile(image)));
   }
 
   await product.populate(CATEGORY_POPULATE);
@@ -157,7 +154,7 @@ export const remove = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Product not found", { code: "NOT_FOUND" });
   if (product.images && product.images.length > 0) {
     await Promise.all(
-      product?.images?.map((image) => removeUploadedFile(image)),
+      product?.images?.map((image) => removeUploadedFile(image.url)),
     );
   }
 
