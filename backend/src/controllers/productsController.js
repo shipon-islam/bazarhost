@@ -5,8 +5,11 @@ import { descendantCategoryIds } from "../services/categoryTree.js";
 import { getSettings } from "../services/settings.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { deleteMultipleImagesWithDB, removeUploadedFile } from "../utils/deleteImages.js";
-import { moveToUploadFolder } from "../utils/moveToUploadFolder.js";
+import {
+  deleteMultipleImagesWithDB,
+  removeUploadedFile,
+} from "../utils/deleteImages.js";
+import { moveMultipleImageToUploadFolder } from "../utils/moveToUploadFolder.js";
 import {
   andFilter,
   buildSort,
@@ -99,13 +102,8 @@ export const create = asyncHandler(async (req, res) => {
   if (slug) await assertSlugFree(slug);
   else slug = await uniqueSlug(Product, body.name);
 
-  const concateImages = [].concat(req.body.images ?? []);
-  const images = await Promise.all(
-    concateImages.map(async (image) => ({
-      ...image,
-      url: await moveToUploadFolder(image.url),
-    })),
-  );
+  
+const images=moveMultipleImageToUploadFolder(body?.images)
 
   const product = await Product.create({
     ...body,
@@ -120,30 +118,30 @@ export const create = asyncHandler(async (req, res) => {
 
 export const update = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
+ 
   if (!product)
     throw new ApiError(404, "Product not found", { code: "NOT_FOUND" });
   const body = req.body;
   const deletedImages =
-    body?.deletedImages.length > 0 ? body?.deletedImages : [];
+    body?.deletedImages?.length > 0 ? body?.deletedImages : [];
   if (body.category && String(body.category) !== String(product.category))
     await assertCategory(body.category);
   if (body.slug && body.slug !== product.slug)
     await assertSlugFree(body.slug, product._id);
   product.set(body); // loaded-doc save() so model validators (e.g. sale < price) always run
+
+  //updated image upload system
   if (body.images) {
-    const concateImages = [].concat(req.body.images ?? []);
-    const images = await Promise.all(
-      concateImages.map(async (image) => ({
-        ...image,
-        url: await moveToUploadFolder(image.url),
-      })),
-    );
+    const images=moveMultipleImageToUploadFolder(body?.images)
     product.set("images", images);
   }
+ 
   await product.save();
-
+  // delete if user select delete image
   if (deletedImages && deletedImages.length > 0) {
-    await Promise.all(body?.deletedImages?.map(removeUploadedFile));
+    await Promise.all(
+      deletedImages.map((image) => removeUploadedFile(image)),
+    );
   }
 
   await product.populate(CATEGORY_POPULATE);
@@ -158,7 +156,9 @@ export const remove = asyncHandler(async (req, res) => {
   if (!product)
     throw new ApiError(404, "Product not found", { code: "NOT_FOUND" });
   if (product.images && product.images.length > 0) {
-    await Promise.all(product?.images?.map(removeUploadedFile));
+    await Promise.all(
+      product?.images?.map((image) => removeUploadedFile(image)),
+    );
   }
 
   audit(req, "product.deleted", "product", product._id, { name: product.name });
@@ -178,7 +178,6 @@ export const bulk = asyncHandler(async (req, res) => {
     if (products && products.length > 0) {
       await deleteMultipleImagesWithDB(products);
     }
-
   } else {
     result = await Product.updateMany(
       { _id: { $in: ids } },

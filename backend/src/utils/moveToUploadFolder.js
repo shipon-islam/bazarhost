@@ -14,3 +14,22 @@ export async function moveToUploadFolder(url) {
   }
   return `/uploads/${name}`;
 }
+
+export async function moveMultipleImageToUploadFolder(
+  imageList,
+) {
+  const concateImages = [].concat(imageList ?? []);
+  const images = await Promise.all(
+    concateImages.map(async (image) => {
+      
+      if (typeof value === "object" && value !== null) {
+        return {
+          ...image,
+          url: await moveToUploadFolder(image.url),
+        };
+      }
+      return await moveToUploadFolder(image)
+    }),
+  );
+  return images;
+}

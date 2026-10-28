@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { PRODUCT_STATUSES, STOCK_STATUSES } from '../config/constants.js';
-import { bulkIds, imageUrl, listQuery, nullableMoney, nullableString, objectId, boolQuery, money } from './common.js';
+import { boolQuery, bulkIds, imageUrl, listQuery, money, nullableMoney, nullableString, objectId } from './common.js';
 
 export const slugSchema = z.preprocess(
   (v) => (v === '' ? undefined : v),
@@ -14,6 +14,7 @@ const fields = {
   shortDescription: z.string().trim().max(500).optional(),
   description: z.string().max(20000).optional(),
   images: z.array(z.object({ url: imageUrl, alt: z.string().trim().max(200).optional() })).max(10).optional(),
+  deletedImages: z.array(z.object({ url: imageUrl, alt: z.string().trim().max(200).optional() })).max(10).optional(),
   category: objectId,
   price: money,
   salePrice: nullableMoney,
