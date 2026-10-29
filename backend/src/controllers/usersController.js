@@ -8,6 +8,7 @@ import { issueInvite } from "../services/invite.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { removeUploadedFile } from "../utils/deleteImages.js";
+import { moveToUploadFolder } from "../utils/moveToUploadFolder.js";
 import { canManageRole } from "../utils/permissions.js";
 import {
   andFilter,
@@ -263,7 +264,12 @@ export const setStatus = asyncHandler(async (req, res) => {
 });
 
 export const remove = asyncHandler(async (req, res) => {
-  await removeUser(req, await loadTarget(req.params.id));
+  const targetUser = await loadTarget(req.params.id);
+  await removeUser(req, targetUser);
+  if (targetUser && targetUser.avatar) {
+    await removeUploadedFile(targetUser.avatar);
+  }
+
   ok(res, { message: "User deleted" });
 });
 

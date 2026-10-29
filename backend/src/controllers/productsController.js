@@ -102,8 +102,8 @@ export const create = asyncHandler(async (req, res) => {
   if (slug) await assertSlugFree(slug);
   else slug = await uniqueSlug(Product, body.name);
 
-  const images = moveMultipleImageToUploadFolder(body?.images);
-
+  const images = await moveMultipleImageToUploadFolder(body?.images);
+console.log(images)
   const product = await Product.create({
     ...body,
     images,
@@ -123,6 +123,7 @@ export const update = asyncHandler(async (req, res) => {
   const body = req.body;
   const deletedImages =
     body?.deletedImages?.length > 0 ? body?.deletedImages : [];
+
   if (body.category && String(body.category) !== String(product.category))
     await assertCategory(body.category);
   if (body.slug && body.slug !== product.slug)
@@ -138,7 +139,7 @@ export const update = asyncHandler(async (req, res) => {
   await product.save();
   // delete if user select delete image
   if (deletedImages && deletedImages.length > 0) {
-    await Promise.all(deletedImages.map((image) => removeUploadedFile(image)));
+    await Promise.all(deletedImages.map((image) => removeUploadedFile(image?.url)));
   }
 
   await product.populate(CATEGORY_POPULATE);

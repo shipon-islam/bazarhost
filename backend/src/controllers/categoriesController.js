@@ -194,7 +194,9 @@ export const remove = asyncHandler(async (req, res) => {
   if (!category)
     throw new ApiError(404, "Category not found", { code: "NOT_FOUND" });
   await deleteIfUnused(req, category);
+  console.log("top side",category?.image)
   await removeUploadedFile(category?.image);
+  console.log(category?.image)
   ok(res, { message: "Category deleted" });
 });
 
