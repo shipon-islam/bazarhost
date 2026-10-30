@@ -1,22 +1,7 @@
-/**
- * Central API client for the admin.
- *
- * Today every function is served by the in-memory MOCK service (src/mock/service.ts).
- * To connect the real backend, replace a function's body with a `request()` call.
- * The expected endpoints and payloads are listed in README.md ("API integration").
- *
- *   export const getProducts = (q: ListQuery) =>
- *     request<Paginated<ProductRow>>("/products", { query: q });
- *
- * UI code must only import from this file (never from src/mock/*), so swapping
- * the implementation requires no component changes.
- */
-import { ApiError } from "./errors";
 import type { ListQuery } from "@/types/common";
+import { ApiError } from "./errors";
 
-export { ApiError } from "./errors";
 export {
-  CURRENT_USER_ID,
   addOrderNote,
   allowedNextStatuses,
   bulkDeleteCategories,
@@ -31,6 +16,7 @@ export {
   createProduct,
   createRole,
   createUser,
+  CURRENT_USER_ID,
   deleteCategory,
   deleteProduct,
   deleteRole,
@@ -61,13 +47,24 @@ export {
   updateUser,
 } from "@/mock/service";
 export type { BulkResult } from "@/mock/service";
+export { ApiError } from "./errors";
 
 // ---------------------------------------------------------------------------
 // Real-backend helper (not used by the mock service yet)
 // ---------------------------------------------------------------------------
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
+export type ApiErrorResponse = {
+  success?: false;
+  message?: string;
+  errors?: Record<string, string>;
+  error?: {
+    message?: string;
+    code?: string;
+    details?: Record<string, string>;
+  };
+};
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   query?: ListQuery | Record<string, string | number | undefined>;
@@ -83,7 +80,8 @@ function toSearchParams(query: RequestOptions["query"]): string {
   };
   for (const [key, value] of Object.entries(query)) {
     if (key === "filters" && value && typeof value === "object") {
-      for (const [fk, fv] of Object.entries(value as Record<string, string>)) add(fk, fv);
+      for (const [fk, fv] of Object.entries(value as Record<string, string>))
+        add(fk, fv);
     } else if (typeof value === "string" || typeof value === "number") {
       add(key, value);
     }
@@ -97,20 +95,33 @@ function toSearchParams(query: RequestOptions["query"]): string {
  * session cookie issued by the backend is used: do NOT store tokens in
  * localStorage. Maps non-2xx responses to `ApiError` (expects `{ message, errors? }`).
  */
-export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}${toSearchParams(options.query)}`, {
-    method: options.method ?? "GET",
-    credentials: "include",
-    headers: options.body !== undefined ? { "Content-Type": "application/json" } : undefined,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-    signal: options.signal,
-  });
+export async function request<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  const res = await fetch(
+    `${API_BASE}${path}${toSearchParams(options.query)}`,
+    {
+      method: options.method ?? "GET",
+      credentials: "include",
+      headers:
+        options.body !== undefined
+          ? { "Content-Type": "application/json" }
+          : undefined,
+      body:
+        options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      signal: options.signal,
+    },
+  );
 
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
     let fieldErrors: Record<string, string> | undefined;
     try {
-      const data = (await res.json()) as { message?: string; errors?: Record<string, string> };
+      const data = (await res.json()) as {
+        message?: string;
+        errors?: Record<string, string>;
+      };
       if (data.message) message = data.message;
       fieldErrors = data.errors;
     } catch {
@@ -119,5 +130,64 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     throw new ApiError(message, res.status, fieldErrors);
   }
   if (res.status === 204) return undefined as T;
+  return (await res.json()) as T;
+}
+
+export async function apiFetch<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  const url = `${API_BASE}${path}${toSearchParams(options.query)}`;
+
+  const headers = new Headers();
+
+  if (options.body !== undefined) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  let res: Response;
+
+  try {
+    res = await fetch(url, {
+      method: options.method ?? "GET",
+      credentials: "include",
+      headers,
+      body:
+        options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      signal: options.signal,
+    });
+  } catch (error) {
+    // Preserve cancellation errors from AbortController.
+    if (error instanceof Error && error.name === "AbortError") {
+      throw error;
+    }
+
+    throw new ApiError("Unable to connect to the server", 0);
+  }
+
+  if (!res.ok) {
+    let message = `Request failed (${res.status})`;
+    let fieldErrors: Record<string, string> | undefined;
+    let code: string | undefined;
+
+    try {
+      const data = (await res.json()) as ApiErrorResponse;
+
+      message = data.error?.message ?? data.message ?? message;
+
+      code = data.error?.code;
+
+      fieldErrors = data.error?.details ?? data.errors;
+    } catch {
+      // The server returned a non-JSON error response.
+    }
+
+    throw new ApiError(message, res.status, fieldErrors);
+  }
+
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
   return (await res.json()) as T;
 }

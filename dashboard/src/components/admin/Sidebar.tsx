@@ -1,17 +1,21 @@
 "use client";
 
-import { Loader2, LogOut, Store } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useLogout } from "@/hooks/useLogout";
+import { logoutAuth } from "@/actions/auth";
 import { NAV_ITEMS, type NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
+import { LogOut, Store } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { useCan } from "./AuthContext";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 const GROUP_ORDER: NavItem["group"][] = ["main", "people", "system"];
 
 function isActive(pathname: string, href: string): boolean {
-  return href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(`${href}/`);
+  return href === "/admin"
+    ? pathname === "/admin"
+    : pathname === href || pathname.startsWith(`${href}/`);
 }
 
 /** Tooltip shown next to an icon when the sidebar is collapsed. */
@@ -41,28 +45,62 @@ export function SidebarBrand({ collapsed }: { collapsed: boolean }) {
       </span>
       {!collapsed && (
         <span className="min-w-0 leading-tight">
-          <span className="block truncate text-base font-bold tracking-tight">BazarHost</span>
-          <span className="block text-[11px] font-medium uppercase tracking-wider text-slate-400">Admin</span>
+          <span className="block truncate text-base font-bold tracking-tight">
+            BazarHost
+          </span>
+          <span className="block text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            Admin
+          </span>
         </span>
       )}
     </Link>
   );
 }
 
-export function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
+export function SidebarNav({
+  collapsed,
+  onNavigate,
+}: {
+  collapsed: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const can = useCan();
-  const { logout, pending } = useLogout();
-
-  const visible = NAV_ITEMS.filter((item) => !item.module || can(item.module, "view"));
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  async function handleLogout() {
+    try {
+      setLoading(true);
+      await logoutAuth();
+      router.replace("/");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+  const visible = NAV_ITEMS.filter(
+    (item) => !item.module || can(item.module, "view"),
+  );
 
   return (
-    <nav aria-label="Main" className={cn("flex min-h-0 flex-1 flex-col px-3 py-4", collapsed ? "overflow-visible" : "overflow-y-auto")}>
+    <nav
+      aria-label="Main"
+      className={cn(
+        "flex min-h-0 flex-1 flex-col px-3 py-4",
+        collapsed ? "overflow-visible" : "overflow-y-auto",
+      )}
+    >
       {GROUP_ORDER.map((group, gi) => {
         const items = visible.filter((i) => i.group === group);
         if (items.length === 0) return null;
         return (
-          <div key={group} className={cn(gi > 0 && "mt-4 border-t border-white/10 pt-4")}>
+          <div
+            key={group}
+            className={cn(gi > 0 && "mt-4 border-t border-white/10 pt-4")}
+          >
             <ul className="space-y-1">
               {items.map((item) => {
                 const active = isActive(pathname, item.href);
@@ -76,11 +114,15 @@ export function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNa
                       className={cn(
                         itemBase,
                         collapsed && "justify-center",
-                        active ? "bg-brand-600 text-white shadow-sm" : "text-slate-300 hover:bg-white/10 hover:text-white",
+                        active
+                          ? "bg-brand-600 text-white shadow-sm"
+                          : "text-slate-300 hover:bg-white/10 hover:text-white",
                       )}
                     >
                       <Icon className="h-5 w-5 shrink-0" aria-hidden />
-                      <span className={collapsed ? "sr-only" : "truncate"}>{item.label}</span>
+                      <span className={collapsed ? "sr-only" : "truncate"}>
+                        {item.label}
+                      </span>
                       {collapsed && <Tip>{item.label}</Tip>}
                     </Link>
                   </li>
@@ -92,13 +134,27 @@ export function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNa
       })}
 
       <div className="mt-auto border-t border-white/10 pt-4">
+        <ConfirmDialog
+          loading={loading}
+          open={isPopupOpen}
+          tone="danger"
+          onCancel={() => setIsPopupOpen(false)}
+          onConfirm={handleLogout}
+          confirmLabel="Logout"
+          title="Confirm Logout?"
+          description=" Are you sure you want to log out of your account?
+              You will need to sign in again to access your dashboard."
+        />
         <button
           type="button"
-          onClick={logout}
-          disabled={pending}
-          className={cn(itemBase, "w-full text-slate-300 hover:bg-white/10 hover:text-white disabled:opacity-60", collapsed && "justify-center")}
+          onClick={() => setIsPopupOpen(true)}
+          className={cn(
+            itemBase,
+            "w-full text-slate-300 hover:bg-white/10 hover:text-white disabled:opacity-60",
+            collapsed && "justify-center",
+          )}
         >
-          {pending ? <Loader2 className="h-5 w-5 shrink-0 animate-spin" aria-hidden /> : <LogOut className="h-5 w-5 shrink-0" aria-hidden />}
+          <LogOut className="h-5 w-5 shrink-0" aria-hidden />
           <span className={collapsed ? "sr-only" : "truncate"}>Logout</span>
           {collapsed && <Tip>Logout</Tip>}
         </button>

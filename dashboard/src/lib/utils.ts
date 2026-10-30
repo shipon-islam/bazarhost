@@ -1,3 +1,5 @@
+import { ApiError } from "./errors";
+
 export function cn(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
 }
@@ -95,7 +97,9 @@ export function toCsv(rows: CsvCell[][]): string {
 
 /** Browser-only: triggers a CSV download. */
 export function downloadCsv(filename: string, rows: CsvCell[][]): void {
-  const blob = new Blob(["﻿" + toCsv(rows)], { type: "text/csv;charset=utf-8" });
+  const blob = new Blob(["﻿" + toCsv(rows)], {
+    type: "text/csv;charset=utf-8",
+  });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -106,7 +110,13 @@ export function downloadCsv(filename: string, rows: CsvCell[][]): void {
   URL.revokeObjectURL(url);
 }
 
-export function errorMessage(err: unknown, fallback = "Something went wrong. Please try again."): string {
+export function errorMessage(
+  err: unknown,
+  fallback = "Something went wrong. Please try again.",
+): string {
   if (err instanceof Error && err.message) return err.message;
+  if (err instanceof ApiError) {
+    return err.message;
+  }
   return fallback;
 }

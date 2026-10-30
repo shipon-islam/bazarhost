@@ -30,7 +30,9 @@ export interface SessionUser {
 }
 
 export async function getCurrentUser(): Promise<SessionUser | null> {
-  const mockAllowed = process.env.NODE_ENV !== "production" || process.env.ALLOW_MOCK_AUTH === "true";
+  const mockAllowed =
+    process.env.NODE_ENV !== "production" ||
+    process.env.ALLOW_MOCK_AUTH === "true";
   if (!mockAllowed) return null;
 
   // TODO(auth): replace with a real session lookup.

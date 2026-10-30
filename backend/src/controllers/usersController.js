@@ -297,7 +297,7 @@ export const activity = asyncHandler(async (req, res) => {
 });
 
 export const bulk = asyncHandler(async (req, res) => {
-  const { action, ids } = req.body;
+  const { action, ids,status } = req.body;
   const results = [];
   for (const id of ids) {
     try {
@@ -313,9 +313,7 @@ export const bulk = asyncHandler(async (req, res) => {
         await applyStatus(
           req,
           target,
-          { activate: "active", disable: "disabled", suspend: "suspended" }[
-            action
-          ],
+          status,
         );
       results.push({ id, ok: true });
     } catch (err) {

@@ -24,6 +24,7 @@ export const listUsersQuery = listQuery.extend({
 });
 
 export const bulkUsersSchema = z.object({
-  action: z.enum(['activate', 'disable', 'suspend', 'delete']),
+  action: z.enum(['status', 'delete']),
   ids: bulkIds,
+  status:z.enum(USER_STATUSES).optional()
 });

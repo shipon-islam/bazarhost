@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { ArrowRight, Store } from "lucide-react";
+import LoginForm from "@/components/admin/LoginForm";
+import { Store } from "lucide-react";
 
 /**
  * Landing page for the admin app. The public storefront (bazarhost.com) is a
@@ -14,13 +14,10 @@ export default function Home() {
           <Store className="h-6 w-6" aria-hidden />
         </div>
         <h1 className="text-xl font-semibold text-gray-900">BazarHost Admin</h1>
-        <p className="mt-2 text-sm text-gray-600">Manage your catalogue, orders and customers.</p>
-        <Link
-          href="/admin"
-          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700"
-        >
-          Open dashboard <ArrowRight className="h-4 w-4" aria-hidden />
-        </Link>
+        <p className="mt-2 text-sm text-gray-600">
+          Manage your catalogue, orders and customers.
+        </p>
+        <LoginForm />
       </div>
     </main>
   );

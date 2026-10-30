@@ -1,26 +1,50 @@
 "use client";
-
-import Link from "next/link";
-import { useCallback, useState } from "react";
-import { Ban, CheckCircle2, Eye, Pencil, Plus, Trash2, Users } from "lucide-react";
+import { getRoles } from "@/actions/role";
+import {
+  bulkDeleteUsers,
+  bulkUpdateUserStatus,
+  deleteUser,
+  getUsers,
+  updateUserStatus,
+} from "@/actions/users";
 import { useCan } from "@/components/admin/AuthContext";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { DataTable, type Column } from "@/components/admin/DataTable";
 import { EmptyState } from "@/components/admin/EmptyState";
-import { BulkActionBar, FilterSelect, FilterToolbar } from "@/components/admin/FilterToolbar";
+import {
+  BulkActionBar,
+  FilterSelect,
+  FilterToolbar,
+} from "@/components/admin/FilterToolbar";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Pagination } from "@/components/admin/Pagination";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Thumb } from "@/components/admin/Thumb";
-import { Button, IconButton, IconLink, LinkButton } from "@/components/ui/button";
+import {
+  Button,
+  IconButton,
+  IconLink,
+  LinkButton,
+} from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { useFetch } from "@/hooks/useFetch";
 import { useListQuery } from "@/hooks/useListQuery";
-import { useResource } from "@/hooks/useResource";
 import { useSelection } from "@/hooks/useSelection";
-import { bulkDeleteUsers, bulkUpdateUserStatus, deleteUser, getRoles, getUsers, updateUser, CURRENT_USER_ID } from "@/lib/api";
+import { CURRENT_USER_ID } from "@/lib/api";
 import { reportBulk } from "@/lib/bulk";
 import { errorMessage, formatDate, formatDateTime } from "@/lib/utils";
 import type { UserStatus, UserWithRole } from "@/types/user";
+import {
+  Ban,
+  CheckCircle2,
+  Eye,
+  Pencil,
+  Plus,
+  Trash2,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 type Pending =
   | { kind: "status"; user: UserWithRole; status: UserStatus }
@@ -33,12 +57,10 @@ export function UsersView() {
   const can = useCan();
   const toast = useToast();
   const list = useListQuery(getUsers, { sortBy: "createdAt", sortDir: "desc" });
+  const roles = useFetch(getRoles);
   const selection = useSelection();
-  const rolesLoader = useCallback(() => getRoles(), []);
-  const { data: roles } = useResource(rolesLoader);
   const [pending, setPending] = useState<Pending>(null);
   const [busy, setBusy] = useState(false);
-
   const rows = list.data?.items ?? [];
   const canEdit = can("users", "edit");
   const canDelete = can("users", "delete");
@@ -49,15 +71,30 @@ export function UsersView() {
     try {
       if (pending.kind === "status") {
         const u = pending.user;
-        await updateUser(u.id, { name: u.name, email: u.email, phone: u.phone, roleId: u.roleId, address: u.address, status: pending.status });
-        toast.success(pending.status === "active" ? "Account reactivated" : `Account ${pending.status}`, u.name);
+        await updateUserStatus(u.id, pending.status);
+        toast.success(
+          pending.status === "active"
+            ? "Account reactivated"
+            : `Account ${pending.status}`,
+          u.name,
+        );
       } else if (pending.kind === "delete") {
         await deleteUser(pending.user.id);
         toast.success("User deleted", pending.user.name);
       } else if (pending.kind === "bulk-status") {
-        reportBulk(toast, "user", "updated", await bulkUpdateUserStatus([...selection.selected], pending.status));
+        reportBulk(
+          toast,
+          "user",
+          "updated",
+          await bulkUpdateUserStatus([...selection.selected], pending.status),
+        );
       } else {
-        reportBulk(toast, "user", "deleted", await bulkDeleteUsers([...selection.selected]));
+        reportBulk(
+          toast,
+          "user",
+          "deleted",
+          await bulkDeleteUsers([...selection.selected]),
+        );
       }
       selection.clear();
       setPending(null);
@@ -68,7 +105,6 @@ export function UsersView() {
       setBusy(false);
     }
   };
-
   const columns: Column<UserWithRole>[] = [
     {
       key: "name",
@@ -78,24 +114,56 @@ export function UsersView() {
         <div className="flex items-center gap-3">
           <Thumb src={u.avatarUrl} name={u.name} rounded="full" />
           <div className="min-w-0">
-            <Link href={`/admin/users/${u.id}`} className="block max-w-56 truncate font-medium text-gray-900 hover:text-brand-700">
+            <Link
+              href={`/admin/users/${u.id}`}
+              className="block max-w-56 truncate font-medium text-gray-900 hover:text-brand-700"
+            >
               {u.name}
-              {u.id === CURRENT_USER_ID && <span className="ml-1.5 text-xs font-normal text-gray-500">(you)</span>}
+              {u.id === CURRENT_USER_ID && (
+                <span className="ml-1.5 text-xs font-normal text-gray-500">
+                  (you)
+                </span>
+              )}
             </Link>
             <p className="max-w-56 truncate text-xs text-gray-500">{u.email}</p>
           </div>
         </div>
       ),
     },
-    { key: "role", header: "Role", sortKey: "role", hideBelow: "sm", cell: (u) => u.roleName },
-    { key: "status", header: "Status", sortKey: "status", cell: (u) => <StatusBadge kind="user" status={u.status} /> },
-    { key: "registered", header: "Registered", sortKey: "createdAt", hideBelow: "lg", cell: (u) => <span className="whitespace-nowrap text-gray-600">{formatDate(u.createdAt)}</span> },
+    {
+      key: "role",
+      header: "Role",
+      sortKey: "role",
+      hideBelow: "sm",
+      cell: (u) => u.role?.name,
+    },
+    {
+      key: "status",
+      header: "Status",
+      sortKey: "status",
+      cell: (u) => <StatusBadge kind="user" status={u.status} />,
+    },
+    {
+      key: "registered",
+      header: "Registered",
+      sortKey: "createdAt",
+      hideBelow: "lg",
+      cell: (u) => (
+        <span className="whitespace-nowrap text-gray-600">
+          {formatDate(u.createdAt)}
+        </span>
+      ),
+    },
     {
       key: "lastLogin",
       header: "Last login",
       sortKey: "lastLoginAt",
       hideBelow: "xl",
-      cell: (u) => <span className="whitespace-nowrap text-gray-600">{u.lastLoginAt ? formatDateTime(u.lastLoginAt) : "Never"}</span>,
+      cell: (u) => (
+        <span className="whitespace-nowrap text-gray-600">
+          {u.lastLoginAt ? formatDateTime(u.lastLoginAt) : "Never"}
+        </span>
+      ),
     },
     {
       key: "actions",
@@ -110,22 +178,40 @@ export function UsersView() {
               <Eye className="h-4 w-4" aria-hidden />
             </IconLink>
             {canEdit && (
-              <IconLink label={`Edit ${u.name}`} href={`/admin/users/${u.id}/edit`}>
+              <IconLink
+                label={`Edit ${u.name}`}
+                href={`/admin/users/${u.id}/edit`}
+              >
                 <Pencil className="h-4 w-4" aria-hidden />
               </IconLink>
             )}
-            {canEdit && !self &&
+            {canEdit &&
+              !self &&
               (u.status === "active" ? (
-                <IconButton label={`Disable ${u.name}`} onClick={() => setPending({ kind: "status", user: u, status: "disabled" })}>
+                <IconButton
+                  label={`Disable ${u.name}`}
+                  onClick={() =>
+                    setPending({ kind: "status", user: u, status: "disabled" })
+                  }
+                >
                   <Ban className="h-4 w-4" aria-hidden />
                 </IconButton>
               ) : (
-                <IconButton label={`Reactivate ${u.name}`} onClick={() => setPending({ kind: "status", user: u, status: "active" })}>
+                <IconButton
+                  label={`Reactivate ${u.name}`}
+                  onClick={() =>
+                    setPending({ kind: "status", user: u, status: "active" })
+                  }
+                >
                   <CheckCircle2 className="h-4 w-4" aria-hidden />
                 </IconButton>
               ))}
             {canDelete && !self && (
-              <IconButton label={`Delete ${u.name}`} tone="danger" onClick={() => setPending({ kind: "delete", user: u })}>
+              <IconButton
+                label={`Delete ${u.name}`}
+                tone="danger"
+                onClick={() => setPending({ kind: "delete", user: u })}
+              >
                 <Trash2 className="h-4 w-4" aria-hidden />
               </IconButton>
             )}
@@ -134,7 +220,6 @@ export function UsersView() {
       },
     },
   ];
-
   const count = selection.selected.size;
   const hasFilters = list.activeFilterCount > 0;
 
@@ -142,9 +227,12 @@ export function UsersView() {
   let description = "";
   let confirmLabel = "Confirm";
   let tone: "primary" | "danger" = "primary";
+
   if (pending?.kind === "status") {
     const disabling = pending.status !== "active";
-    title = disabling ? `Disable ${pending.user.name}?` : `Reactivate ${pending.user.name}?`;
+    title = disabling
+      ? `Disable ${pending.user.name}?`
+      : `Reactivate ${pending.user.name}?`;
     description = disabling
       ? "Disabled users cannot log in. Their data and order history are kept, and you can reactivate the account at any time."
       : "They will be able to log in again straight away.";
@@ -152,18 +240,24 @@ export function UsersView() {
     tone = disabling ? "danger" : "primary";
   } else if (pending?.kind === "delete") {
     title = `Delete ${pending.user.name}?`;
-    description = "This permanently removes the account. Users with order history can't be deleted: disable them instead.";
+    description =
+      "This permanently removes the account. Users with order history can't be deleted: disable them instead.";
     confirmLabel = "Delete user";
     tone = "danger";
   } else if (pending?.kind === "bulk-status") {
     const disabling = pending.status !== "active";
-    title = disabling ? `Disable ${count} user${count === 1 ? "" : "s"}?` : `Reactivate ${count} user${count === 1 ? "" : "s"}?`;
-    description = disabling ? "Disabled users cannot log in. Your own account will be skipped." : "They will be able to log in again.";
+    title = disabling
+      ? `Disable ${count} user${count === 1 ? "" : "s"}?`
+      : `Reactivate ${count} user${count === 1 ? "" : "s"}?`;
+    description = disabling
+      ? "Disabled users cannot log in. Your own account will be skipped."
+      : "They will be able to log in again.";
     confirmLabel = disabling ? "Disable accounts" : "Reactivate";
     tone = disabling ? "danger" : "primary";
   } else if (pending?.kind === "bulk-delete") {
     title = `Delete ${count} user${count === 1 ? "" : "s"}?`;
-    description = "Users with order history, and your own account, will be skipped.";
+    description =
+      "Users with order history, and your own account, will be skipped.";
     confirmLabel = "Delete users";
     tone = "danger";
   }
@@ -198,7 +292,10 @@ export function UsersView() {
             allLabel="All roles"
             value={list.filters.role ?? "all"}
             onChange={(v) => list.setFilter("role", v)}
-            options={(roles ?? []).map((r) => ({ value: r.id, label: r.name }))}
+            options={(roles.data?.items ?? []).map((r) => ({
+              value: r.id,
+              label: r.name,
+            }))}
           />
           <FilterSelect
             label="Filter by status"
@@ -216,16 +313,32 @@ export function UsersView() {
         <BulkActionBar count={count} onClear={selection.clear}>
           {canEdit && (
             <>
-              <Button size="sm" variant="secondary" onClick={() => setPending({ kind: "bulk-status", status: "active" })}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() =>
+                  setPending({ kind: "bulk-status", status: "active" })
+                }
+              >
                 Activate
               </Button>
-              <Button size="sm" variant="secondary" onClick={() => setPending({ kind: "bulk-status", status: "disabled" })}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() =>
+                  setPending({ kind: "bulk-status", status: "disabled" })
+                }
+              >
                 Disable
               </Button>
             </>
           )}
           {canDelete && (
-            <Button size="sm" variant="danger-outline" onClick={() => setPending({ kind: "bulk-delete" })}>
+            <Button
+              size="sm"
+              variant="danger-outline"
+              onClick={() => setPending({ kind: "bulk-delete" })}
+            >
               <Trash2 className="h-3.5 w-3.5" aria-hidden /> Delete
             </Button>
           )}
@@ -242,19 +355,45 @@ export function UsersView() {
           onRetry={list.reload}
           sort={list.sort}
           onSort={list.toggleSort}
-          selection={canEdit || canDelete ? { selected: selection.selected, onToggle: selection.toggle, onToggleMany: selection.setMany } : undefined}
+          selection={
+            canEdit || canDelete
+              ? {
+                  selected: selection.selected,
+                  onToggle: selection.toggle,
+                  onToggleMany: selection.setMany,
+                }
+              : undefined
+          }
           empty={
             <EmptyState
               icon={Users}
-              title={hasFilters ? "No users match your filters" : "No users yet"}
-              description={hasFilters ? "Try a different search term or clear the filters." : "Invite a user to get started."}
-              action={hasFilters ? <Button variant="secondary" onClick={list.resetFilters}>Clear filters</Button> : undefined}
+              title={
+                hasFilters ? "No users match your filters" : "No users yet"
+              }
+              description={
+                hasFilters
+                  ? "Try a different search term or clear the filters."
+                  : "Invite a user to get started."
+              }
+              action={
+                hasFilters ? (
+                  <Button variant="secondary" onClick={list.resetFilters}>
+                    Clear filters
+                  </Button>
+                ) : undefined
+              }
             />
           }
         />
 
-        {list.data && list.data.total > 0 && (
-          <Pagination page={list.page} pageSize={list.pageSize} total={list.data.total} onPageChange={list.setPage} onPageSizeChange={list.setPageSize} />
+        {list.data && list.data.meta.total > 0 && (
+          <Pagination
+            page={list.page}
+            pageSize={list.pageSize}
+            total={list.data.meta.total}
+            onPageChange={list.setPage}
+            onPageSizeChange={list.setPageSize}
+          />
         )}
       </div>
 

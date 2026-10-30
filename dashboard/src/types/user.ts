@@ -11,11 +11,21 @@ export interface User {
   avatarUrl: string | null;
   createdAt: string;
   lastLoginAt: string | null;
+  ordersCount: number;
+  totalSpent: number;
+}
+
+export interface LoginUserBody {
+  email: string;
+  password: string;
 }
 
 export interface UserWithRole extends User {
-  roleName: string;
+  role?: { _id: string; name: string };
 }
 
 /** Passwords are never part of this type: new users receive an invite email instead. */
-export type UserInput = Pick<User, "name" | "email" | "phone" | "roleId" | "status" | "address">;
+export type UserInput = Pick<
+  User,
+  "name" | "email" | "phone" | "roleId" | "status" | "address"
+>;

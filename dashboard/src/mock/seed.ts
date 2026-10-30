@@ -6,9 +6,22 @@
 import { emptyPermissions, fullPermissions } from "@/lib/permissions";
 import { slugify } from "@/lib/utils";
 import type { Category } from "@/types/category";
-import type { Address, Order, OrderItem, OrderStatus, OrderTimelineEntry, PaymentMethod, PaymentStatus } from "@/types/order";
+import type {
+  Address,
+  Order,
+  OrderItem,
+  OrderStatus,
+  OrderTimelineEntry,
+  PaymentMethod,
+  PaymentStatus,
+} from "@/types/order";
 import type { Product } from "@/types/product";
-import type { PermissionAction, PermissionMap, PermissionModule, Role } from "@/types/role";
+import type {
+  PermissionAction,
+  PermissionMap,
+  PermissionModule,
+  Role,
+} from "@/types/role";
 import type { StoreSettings } from "@/types/settings";
 import type { User } from "@/types/user";
 
@@ -37,7 +50,9 @@ const V: PermissionAction[] = ["view"];
 const VE: PermissionAction[] = ["view", "edit"];
 const VCE: PermissionAction[] = ["view", "create", "edit"];
 
-function perms(spec: Partial<Record<PermissionModule, PermissionAction[]>>): PermissionMap {
+function perms(
+  spec: Partial<Record<PermissionModule, PermissionAction[]>>,
+): PermissionMap {
   return { ...emptyPermissions(), ...spec };
 }
 
@@ -79,7 +94,13 @@ function seedRoles(): Role[] {
       name: "Manager",
       description: "Manages catalogue and fulfilment, read-only on people.",
       isSystem: false,
-      permissions: perms({ products: VCE, categories: VCE, orders: VE, users: V, reports: V }),
+      permissions: perms({
+        products: VCE,
+        categories: VCE,
+        orders: VE,
+        users: V,
+        reports: V,
+      }),
     },
     {
       id: ROLE_IDS.productManager,
@@ -109,19 +130,55 @@ function seedRoles(): Role[] {
 // Categories
 // ---------------------------------------------------------------------------
 
-type CatSeed = [id: string, name: string, emoji: string, parentId: string | null, desc: string];
+type CatSeed = [
+  id: string,
+  name: string,
+  emoji: string,
+  parentId: string | null,
+  desc: string,
+];
 
 const CATEGORY_SEEDS: CatSeed[] = [
-  ["c-electronics", "Electronics", "📱", null, "Gadgets, audio and everyday tech."],
-  ["c-mobile-acc", "Mobile Accessories", "🎧", "c-electronics", "Chargers, cases and cables."],
-  ["c-fashion", "Fashion", "👜", null, "Clothing and accessories for everyone."],
-  ["c-mens", "Men's Wear", "👕", "c-fashion", "Panjabi, shirts, trousers and more."],
+  [
+    "c-electronics",
+    "Electronics",
+    "📱",
+    null,
+    "Gadgets, audio and everyday tech.",
+  ],
+  [
+    "c-mobile-acc",
+    "Mobile Accessories",
+    "🎧",
+    "c-electronics",
+    "Chargers, cases and cables.",
+  ],
+  [
+    "c-fashion",
+    "Fashion",
+    "👜",
+    null,
+    "Clothing and accessories for everyone.",
+  ],
+  [
+    "c-mens",
+    "Men's Wear",
+    "👕",
+    "c-fashion",
+    "Panjabi, shirts, trousers and more.",
+  ],
   ["c-womens", "Women's Wear", "👗", "c-fashion", "Sarees, kurtis and bags."],
   ["c-home", "Home & Living", "🏠", null, "Furnishing and home décor."],
   ["c-kitchen", "Kitchen", "🍳", "c-home", "Cookware and small appliances."],
   ["c-beauty", "Beauty", "💄", null, "Skincare, makeup and hair care."],
   ["c-groceries", "Groceries", "🛒", null, "Pantry staples and tea."],
-  ["c-sports", "Sports & Fitness", "🧘", null, "Gear for training at home or outdoors."],
+  [
+    "c-sports",
+    "Sports & Fitness",
+    "🧘",
+    null,
+    "Gear for training at home or outdoors.",
+  ],
   ["c-books", "Books", "📚", null, "Fiction and children's books."],
   ["c-toys", "Toys", "🧸", null, "Play and learning for kids."],
 ];
@@ -138,7 +195,9 @@ function seedCategories(rand: () => number): Category[] {
     status: id === "c-toys" ? "hidden" : "active",
     seoTitle: `${name} | BazarHost`,
     seoDescription: `Shop ${name.toLowerCase()} online at BazarHost.`,
-    createdAt: new Date(MOCK_NOW - (300 - i * 12 + Math.floor(rand() * 5)) * DAY_MS).toISOString(),
+    createdAt: new Date(
+      MOCK_NOW - (300 - i * 12 + Math.floor(rand() * 5)) * DAY_MS,
+    ).toISOString(),
     emoji,
   }));
 }
@@ -147,7 +206,12 @@ function seedCategories(rand: () => number): Category[] {
 // Products
 // ---------------------------------------------------------------------------
 
-type ProdSeed = [name: string, categoryId: string, price: number, emoji: string];
+type ProdSeed = [
+  name: string,
+  categoryId: string,
+  price: number,
+  emoji: string,
+];
 
 const PRODUCT_SEEDS: ProdSeed[] = [
   ["Wireless Earbuds Pro", "c-electronics", 2490, "🎧"],
@@ -212,8 +276,14 @@ function seedProducts(rand: () => number): Product[] {
   return PRODUCT_SEEDS.map(([name, categoryId, price, emoji], i) => {
     const r = rand();
     // A handful of low-stock / out-of-stock items for the dashboard alert list.
-    const stock = i % 9 === 4 ? 0 : i % 7 === 3 ? 2 + Math.floor(rand() * 7) : 12 + Math.floor(rand() * 180);
-    const status: Product["status"] = i % 13 === 6 ? "draft" : i % 17 === 9 ? "archived" : "active";
+    const stock =
+      i % 9 === 4
+        ? 0
+        : i % 7 === 3
+          ? 2 + Math.floor(rand() * 7)
+          : 12 + Math.floor(rand() * 180);
+    const status: Product["status"] =
+      i % 13 === 6 ? "draft" : i % 17 === 9 ? "archived" : "active";
     const onSale = r < 0.3;
     return {
       id: `p-${i + 1}`,
@@ -225,14 +295,18 @@ function seedProducts(rand: () => number): Product[] {
       images: [],
       categoryId,
       price,
-      salePrice: onSale ? Math.round((price * (0.8 + rand() * 0.12)) / 10) * 10 : null,
+      salePrice: onSale
+        ? Math.round((price * (0.8 + rand() * 0.12)) / 10) * 10
+        : null,
       stock,
       stockStatus: stock > 0 ? "in_stock" : "out_of_stock",
       status,
       featured: i % 6 === 0,
       seoTitle: `${name} | BazarHost`,
       seoDescription: `Buy ${name} online at the best price in Bangladesh.`,
-      createdAt: new Date(MOCK_NOW - Math.floor((i + 1) * 2.7 + rand() * 4) * DAY_MS).toISOString(),
+      createdAt: new Date(
+        MOCK_NOW - Math.floor((i + 1) * 2.7 + rand() * 4) * DAY_MS,
+      ).toISOString(),
       emoji,
     };
   });
@@ -243,11 +317,49 @@ function seedProducts(rand: () => number): Product[] {
 // ---------------------------------------------------------------------------
 
 const FIRST = [
-  "Rahim", "Karim", "Nusrat", "Tasnim", "Sabbir", "Farhana", "Imran", "Mim", "Arif", "Sadia",
-  "Jubayer", "Tania", "Mahmud", "Nabila", "Shakil", "Rima", "Habib", "Lamia", "Rafiq", "Sumaiya",
+  "Rahim",
+  "Karim",
+  "Nusrat",
+  "Tasnim",
+  "Sabbir",
+  "Farhana",
+  "Imran",
+  "Mim",
+  "Arif",
+  "Sadia",
+  "Jubayer",
+  "Tania",
+  "Mahmud",
+  "Nabila",
+  "Shakil",
+  "Rima",
+  "Habib",
+  "Lamia",
+  "Rafiq",
+  "Sumaiya",
 ];
-const LAST = ["Uddin", "Hossain", "Jahan", "Akter", "Ahmed", "Islam", "Chowdhury", "Rahman", "Khan", "Sarker"];
-const CITIES = ["Dhaka", "Chattogram", "Rajshahi", "Sirajganj", "Khulna", "Sylhet", "Bogura", "Cumilla"];
+const LAST = [
+  "Uddin",
+  "Hossain",
+  "Jahan",
+  "Akter",
+  "Ahmed",
+  "Islam",
+  "Chowdhury",
+  "Rahman",
+  "Khan",
+  "Sarker",
+];
+const CITIES = [
+  "Dhaka",
+  "Chattogram",
+  "Rajshahi",
+  "Sirajganj",
+  "Khulna",
+  "Sylhet",
+  "Bogura",
+  "Cumilla",
+];
 
 function phone(rand: () => number): string {
   const n = String(Math.floor(rand() * 1e8)).padStart(8, "0");
@@ -272,17 +384,24 @@ function seedUsers(rand: () => number): User[] {
     address: `${CITIES[i % CITIES.length]}, Bangladesh`,
     avatarUrl: null,
     createdAt: new Date(MOCK_NOW - (420 - i * 20) * DAY_MS).toISOString(),
-    lastLoginAt: new Date(MOCK_NOW - Math.floor(rand() * 3 * DAY_MS)).toISOString(),
+    lastLoginAt: new Date(
+      MOCK_NOW - Math.floor(rand() * 3 * DAY_MS),
+    ).toISOString(),
   }));
 
   const customerCount = 40;
   const customers: User[] = [];
   for (let i = 0; i < customerCount; i++) {
     const first = FIRST[i % FIRST.length] ?? "Customer";
-    const last = LAST[(i * 3 + Math.floor(i / FIRST.length)) % LAST.length] ?? "User";
-    const age = i < 6 ? 380 + Math.floor(rand() * 40) : Math.floor(Math.pow(rand(), 1.4) * 360) + 1;
+    const last =
+      LAST[(i * 3 + Math.floor(i / FIRST.length)) % LAST.length] ?? "User";
+    const age =
+      i < 6
+        ? 380 + Math.floor(rand() * 40)
+        : Math.floor(Math.pow(rand(), 1.4) * 360) + 1;
     const roll = rand();
-    const status: User["status"] = roll < 0.06 ? "suspended" : roll < 0.12 ? "disabled" : "active";
+    const status: User["status"] =
+      roll < 0.06 ? "suspended" : roll < 0.12 ? "disabled" : "active";
     customers.push({
       id: `u-${staff.length + i + 1}`,
       name: `${first} ${last}`,
@@ -293,7 +412,10 @@ function seedUsers(rand: () => number): User[] {
       address: `House ${1 + Math.floor(rand() * 90)}, Road ${1 + Math.floor(rand() * 20)}, ${CITIES[Math.floor(rand() * CITIES.length)]}`,
       avatarUrl: null,
       createdAt: new Date(MOCK_NOW - age * DAY_MS).toISOString(),
-      lastLoginAt: rand() < 0.1 ? null : new Date(MOCK_NOW - Math.floor(rand() * 40 * DAY_MS)).toISOString(),
+      lastLoginAt:
+        rand() < 0.1
+          ? null
+          : new Date(MOCK_NOW - Math.floor(rand() * 40 * DAY_MS)).toISOString(),
     });
   }
   return [...users, ...customers];
@@ -321,8 +443,22 @@ function addressFor(user: User, rand: () => number): Address {
 
 function chooseStatus(ageDays: number, rand: () => number): OrderStatus {
   const r = rand();
-  if (ageDays < 2) return r < 0.45 ? "pending" : r < 0.8 ? "processing" : r < 0.95 ? "shipped" : "cancelled";
-  if (ageDays < 14) return r < 0.15 ? "processing" : r < 0.5 ? "shipped" : r < 0.95 ? "delivered" : "cancelled";
+  if (ageDays < 2)
+    return r < 0.45
+      ? "pending"
+      : r < 0.8
+        ? "processing"
+        : r < 0.95
+          ? "shipped"
+          : "cancelled";
+  if (ageDays < 14)
+    return r < 0.15
+      ? "processing"
+      : r < 0.5
+        ? "shipped"
+        : r < 0.95
+          ? "delivered"
+          : "cancelled";
   return r < 0.86 ? "delivered" : r < 0.88 ? "shipped" : "cancelled";
 }
 
@@ -333,38 +469,68 @@ function choosePayment(
 ): { paymentStatus: PaymentStatus; refunded: boolean } {
   if (status === "cancelled") {
     if (method === "cod") return { paymentStatus: "pending", refunded: false };
-    return rand() < 0.7 ? { paymentStatus: "refunded", refunded: true } : { paymentStatus: "failed", refunded: false };
+    return rand() < 0.7
+      ? { paymentStatus: "refunded", refunded: true }
+      : { paymentStatus: "failed", refunded: false };
   }
   if (status === "delivered") return { paymentStatus: "paid", refunded: false };
   if (method === "cod") return { paymentStatus: "pending", refunded: false };
-  if (status === "pending") return { paymentStatus: rand() < 0.7 ? "pending" : "failed", refunded: false };
+  if (status === "pending")
+    return {
+      paymentStatus: rand() < 0.7 ? "pending" : "failed",
+      refunded: false,
+    };
   return { paymentStatus: "paid", refunded: false };
 }
 
-function seedOrders(rand: () => number, products: Product[], users: User[]): Order[] {
+function seedOrders(
+  rand: () => number,
+  products: Product[],
+  users: User[],
+): Order[] {
   const customers = users
     .filter((u) => u.roleId === ROLE_IDS.customer)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const sellable = products.filter((p) => p.status === "active");
-  const methods: PaymentMethod[] = ["bkash", "bkash", "bkash", "bkash", "nagad", "nagad", "card", "card", "cod", "cod", "cod"];
+  const methods: PaymentMethod[] = [
+    "bkash",
+    "bkash",
+    "bkash",
+    "bkash",
+    "nagad",
+    "nagad",
+    "card",
+    "card",
+    "cod",
+    "cod",
+    "cod",
+  ];
   const total = 520;
 
   const times: number[] = [];
   for (let i = 0; i < total; i++) {
     // The first few land in the last 20 hours so "Today" has data.
     if (i < 9) times.push(MOCK_NOW - Math.floor(rand() * 20 * HOUR_MS));
-    else times.push(MOCK_NOW - Math.floor(Math.pow(rand(), 1.6) * 365 * DAY_MS) - 20 * HOUR_MS);
+    else
+      times.push(
+        MOCK_NOW -
+          Math.floor(Math.pow(rand(), 1.6) * 365 * DAY_MS) -
+          20 * HOUR_MS,
+      );
   }
   times.sort((a, b) => a - b); // oldest first → ascending order numbers
 
   return times.map((t, idx) => {
-    const eligible = customers.filter((c) => new Date(c.createdAt).getTime() <= t);
+    const eligible = customers.filter(
+      (c) => new Date(c.createdAt).getTime() <= t,
+    );
     const customer = pick(rand, eligible.length > 0 ? eligible : customers);
     const ageDays = (MOCK_NOW - t) / DAY_MS;
 
     const lineCount = 1 + Math.floor(rand() * 3.4);
     const chosen = new Set<number>();
-    while (chosen.size < Math.min(lineCount, sellable.length)) chosen.add(Math.floor(rand() * sellable.length));
+    while (chosen.size < Math.min(lineCount, sellable.length))
+      chosen.add(Math.floor(rand() * sellable.length));
     const items: OrderItem[] = [...chosen].map((pi) => {
       const p = sellable[pi] as Product;
       return {
@@ -377,7 +543,10 @@ function seedOrders(rand: () => number, products: Product[], users: User[]): Ord
     });
 
     const subtotal = items.reduce((s, it) => s + it.unitPrice * it.quantity, 0);
-    const discount = rand() < 0.25 ? Math.round((subtotal * (0.05 + rand() * 0.05)) / 10) * 10 : 0;
+    const discount =
+      rand() < 0.25
+        ? Math.round((subtotal * (0.05 + rand() * 0.05)) / 10) * 10
+        : 0;
     const shippingAddress = addressFor(customer, rand);
     const shipping = shippingAddress.city === "Dhaka" ? 60 : 120;
     const tax = Math.round((subtotal - discount) * 0.05);
@@ -385,15 +554,21 @@ function seedOrders(rand: () => number, products: Product[], users: User[]): Ord
     const method = pick(rand, methods);
     const { paymentStatus, refunded } = choosePayment(status, method, rand);
 
-    const at = (offsetHours: number) => new Date(Math.min(t + offsetHours * HOUR_MS, MOCK_NOW)).toISOString();
+    const at = (offsetHours: number) =>
+      new Date(Math.min(t + offsetHours * HOUR_MS, MOCK_NOW)).toISOString();
     const timeline: OrderTimelineEntry[] = [{ status: "pending", at: at(0) }];
-    if (status === "cancelled") timeline.push({ status: "cancelled", at: at(2 + rand() * 20) });
+    if (status === "cancelled")
+      timeline.push({ status: "cancelled", at: at(2 + rand() * 20) });
     else {
-      if (status !== "pending") timeline.push({ status: "processing", at: at(3 + rand() * 6) });
-      if (status === "shipped" || status === "delivered") timeline.push({ status: "shipped", at: at(26 + rand() * 12) });
-      if (status === "delivered") timeline.push({ status: "delivered", at: at(72 + rand() * 48) });
+      if (status !== "pending")
+        timeline.push({ status: "processing", at: at(3 + rand() * 6) });
+      if (status === "shipped" || status === "delivered")
+        timeline.push({ status: "shipped", at: at(26 + rand() * 12) });
+      if (status === "delivered")
+        timeline.push({ status: "delivered", at: at(72 + rand() * 48) });
     }
-    if (refunded) timeline.push({ status: "refunded", at: at(30 + rand() * 20) });
+    if (refunded)
+      timeline.push({ status: "refunded", at: at(30 + rand() * 20) });
 
     const num = 10001 + idx;
     return {
@@ -414,7 +589,8 @@ function seedOrders(rand: () => number, products: Product[], users: User[]): Ord
       paymentMethod: method,
       paymentStatus,
       transactionId:
-        method !== "cod" && (paymentStatus === "paid" || paymentStatus === "refunded")
+        method !== "cod" &&
+        (paymentStatus === "paid" || paymentStatus === "refunded")
           ? `TXN${String(Math.floor(rand() * 1e10)).padStart(10, "0")}`
           : null,
       status,
@@ -423,7 +599,14 @@ function seedOrders(rand: () => number, products: Product[], users: User[]): Ord
       timeline,
       notes:
         rand() < 0.08
-          ? [{ id: `n-${num}-1`, text: "Customer asked for delivery after 5 PM.", author: "Zahid Hasan", at: at(1) }]
+          ? [
+              {
+                id: `n-${num}-1`,
+                text: "Customer asked for delivery after 5 PM.",
+                author: "Zahid Hasan",
+                at: at(1),
+              },
+            ]
           : [],
     };
   });
@@ -471,5 +654,12 @@ export function createSeed(): MockDb {
   const users = seedUsers(rand);
   const roles = seedRoles();
   const orders = seedOrders(rand, products, users);
-  return { categories, products, users, roles, orders, settings: seedSettings() };
+  return {
+    categories,
+    products,
+    users,
+    roles,
+    orders,
+    settings: seedSettings(),
+  };
 }

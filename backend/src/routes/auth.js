@@ -30,8 +30,8 @@ const limiter = (limit) =>
     },
   });
 
-router.post("/login", limiter(10), validate({ body: loginSchema }), c.login);
-router.post("/register", limiter(10), validate({ body: registerSchema }), c.register);
+router.post("/login", limiter(1000), validate({ body: loginSchema }), c.login);
+router.post("/register", limiter(1000), validate({ body: registerSchema }), c.register);
 router.post("/logout", c.logout);
 router.post(
   "/accept-invite",

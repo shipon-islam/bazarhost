@@ -1,10 +1,10 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
-import type { ReactNode } from "react";
 import { Checkbox } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import type { SortDir } from "@/types/common";
+import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
+import type { ReactNode } from "react";
 import { ErrorState } from "./EmptyState";
 import { TableSkeletonRows } from "./LoadingSkeleton";
 
@@ -35,7 +35,11 @@ const HIDE: Record<NonNullable<Column<unknown>["hideBelow"]>, string> = {
   xl: "hidden xl:table-cell",
 };
 
-const ALIGN = { left: "text-left", right: "text-right", center: "text-center" } as const;
+const ALIGN = {
+  left: "text-left",
+  right: "text-right",
+  center: "text-center",
+} as const;
 
 export function DataTable<T>({
   label,
@@ -72,12 +76,20 @@ export function DataTable<T>({
   if (!loading && rows.length === 0) return <>{empty}</>;
 
   const ids = rows.map(rowKey);
-  const allSelected = selection !== undefined && ids.length > 0 && ids.every((id) => selection.selected.has(id));
-  const someSelected = selection !== undefined && ids.some((id) => selection.selected.has(id));
-
+  const allSelected =
+    selection !== undefined &&
+    ids.length > 0 &&
+    ids.every((id) => selection.selected.has(id));
+  const someSelected =
+    selection !== undefined && ids.some((id) => selection.selected.has(id));
   return (
     <div className="overflow-x-auto" aria-busy={loading || refreshing}>
-      <table className={cn("w-full min-w-max text-left text-sm transition-opacity", refreshing && "opacity-60")}>
+      <table
+        className={cn(
+          "w-full min-w-max text-left text-sm transition-opacity",
+          refreshing && "opacity-60",
+        )}
+      >
         <caption className="sr-only">{label}</caption>
         <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-600">
           <tr>
@@ -90,19 +102,32 @@ export function DataTable<T>({
                   ref={(el) => {
                     if (el) el.indeterminate = someSelected && !allSelected;
                   }}
-                  onChange={(e) => selection.onToggleMany(ids, e.target.checked)}
+                  onChange={(e) =>
+                    selection.onToggleMany(ids, e.target.checked)
+                  }
                 />
               </th>
             )}
             {columns.map((col) => {
-              const sorted = col.sortKey !== undefined && sort?.by === col.sortKey;
-              const ariaSort = sorted ? (sort?.dir === "asc" ? "ascending" : "descending") : col.sortKey ? "none" : undefined;
+              const sorted =
+                col.sortKey !== undefined && sort?.by === col.sortKey;
+              const ariaSort = sorted
+                ? sort?.dir === "asc"
+                  ? "ascending"
+                  : "descending"
+                : col.sortKey
+                  ? "none"
+                  : undefined;
               return (
                 <th
                   key={col.key}
                   scope="col"
                   aria-sort={ariaSort}
-                  className={cn("whitespace-nowrap px-4 py-3", ALIGN[col.align ?? "left"], col.hideBelow && HIDE[col.hideBelow])}
+                  className={cn(
+                    "whitespace-nowrap px-4 py-3",
+                    ALIGN[col.align ?? "left"],
+                    col.hideBelow && HIDE[col.hideBelow],
+                  )}
                 >
                   {col.srOnlyHeader ? (
                     <span className="sr-only">{col.header}</span>
@@ -123,7 +148,10 @@ export function DataTable<T>({
                           <ArrowDown className="h-3.5 w-3.5" aria-hidden />
                         )
                       ) : (
-                        <ChevronsUpDown className="h-3.5 w-3.5 text-gray-400" aria-hidden />
+                        <ChevronsUpDown
+                          className="h-3.5 w-3.5 text-gray-400"
+                          aria-hidden
+                        />
                       )}
                     </button>
                   ) : (
@@ -136,13 +164,23 @@ export function DataTable<T>({
         </thead>
         <tbody className="divide-y divide-gray-100">
           {loading ? (
-            <TableSkeletonRows rows={skeletonRows} columns={columns.length} selectable={Boolean(selection)} />
+            <TableSkeletonRows
+              rows={skeletonRows}
+              columns={columns.length}
+              selectable={Boolean(selection)}
+            />
           ) : (
             rows.map((row) => {
               const id = rowKey(row);
               const isSelected = selection?.selected.has(id) ?? false;
               return (
-                <tr key={id} className={cn("transition-colors hover:bg-gray-50/70", isSelected && "bg-brand-50/60")}>
+                <tr
+                  key={id}
+                  className={cn(
+                    "transition-colors hover:bg-gray-50/70",
+                    isSelected && "bg-brand-50/60",
+                  )}
+                >
                   {selection && (
                     <td className="w-10 px-4 py-3">
                       <Checkbox
